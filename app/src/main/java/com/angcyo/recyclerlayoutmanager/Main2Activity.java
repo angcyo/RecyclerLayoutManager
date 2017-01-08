@@ -1,13 +1,12 @@
 package com.angcyo.recyclerlayoutmanager;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -59,6 +58,20 @@ public class Main2Activity extends AppCompatActivity {
                 }
                 recyclerView.getAdapter().notifyDataSetChanged();
             }
+
+            @Override
+            public void onSwipeTo(RecyclerView.ViewHolder viewHolder, float offset) {
+                if (offset < -50) {
+                    viewHolder.itemView.findViewById(R.id.like).setVisibility(View.VISIBLE);
+                    viewHolder.itemView.findViewById(R.id.not_like).setVisibility(View.INVISIBLE);
+                } else if (offset > 50) {
+                    viewHolder.itemView.findViewById(R.id.like).setVisibility(View.INVISIBLE);
+                    viewHolder.itemView.findViewById(R.id.not_like).setVisibility(View.VISIBLE);
+                } else {
+                    viewHolder.itemView.findViewById(R.id.like).setVisibility(View.INVISIBLE);
+                    viewHolder.itemView.findViewById(R.id.not_like).setVisibility(View.INVISIBLE);
+                }
+            }
         });
         new ItemTouchHelper(callback).attachToRecyclerView(recyclerView);
 
@@ -96,31 +109,33 @@ public class Main2Activity extends AppCompatActivity {
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-            CardView cardView = new CardView(Main2Activity.this);
-            cardView.setLayoutParams(new ViewGroup.LayoutParams(dp(270), dp(300)));
-            cardView.setCardBackgroundColor(Color.parseColor("#393F4E"));
-//            cardView.setBackgroundColor(Color.BLUE);
-            TextView textView = new TextView(Main2Activity.this);
-//            textView.setBackgroundColor(Color.YELLOW);
+            final View view = LayoutInflater.from(Main2Activity.this).inflate(R.layout.item_renren_layout, parent, false);
 
-            ImageView imageView = new ImageView(Main2Activity.this);
-            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+//            CardView cardView = new CardView(Main2Activity.this);
+//            cardView.setLayoutParams(new ViewGroup.LayoutParams(dp(270), dp(300)));
+//            cardView.setCardBackgroundColor(Color.parseColor("#393F4E"));
+////            cardView.setBackgroundColor(Color.BLUE);
+//            TextView textView = new TextView(Main2Activity.this);
+////            textView.setBackgroundColor(Color.YELLOW);
+//
+//            ImageView imageView = new ImageView(Main2Activity.this);
+//            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+//
+//            textView.setPadding(0, dp(260), 0, 0);
+//
+//            cardView.addView(textView, new ViewGroup.LayoutParams(dp(270), dp(300)));
+//            cardView.addView(imageView, new ViewGroup.LayoutParams(dp(270), dp(260)));
 
-            textView.setPadding(0, dp(260), 0, 0);
-
-            cardView.addView(textView, new ViewGroup.LayoutParams(dp(270), dp(300)));
-            cardView.addView(imageView, new ViewGroup.LayoutParams(dp(270), dp(260)));
-
-            final MyViewHolder myViewHolder = new MyViewHolder(cardView);
-            myViewHolder.mTextView = textView;
-            myViewHolder.mImageView = imageView;
+            final MyViewHolder myViewHolder = new MyViewHolder(view);
+//            myViewHolder.mTextView = textView;
+//            myViewHolder.mImageView = imageView;
             return myViewHolder;
         }
 
         @Override
         public void onBindViewHolder(final MyViewHolder holder, final int position) {
-            Glide.with(Main2Activity.this).load(mDatas.get(position).getUrl()).fitCenter().into(holder.mImageView);
-            holder.mTextView.setText(mDatas.get(position).getName());
+            Glide.with(Main2Activity.this).load(mDatas.get(position).getUrl()).fitCenter().into((ImageView) holder.itemView.findViewById(R.id.image_view));
+            ((TextView) holder.itemView.findViewById(R.id.text_view)).setText(mDatas.get(position).getName());
         }
 
         @Override

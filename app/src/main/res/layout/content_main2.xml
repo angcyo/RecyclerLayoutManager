@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_margin="60dp"
+        android:layout_margin="50dp"
         android:text="ToLeft"
         android:textAllCaps="false"/>
 
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="60dp"
+        android:layout_margin="50dp"
         android:text="ToRight"
         android:textAllCaps="false"/>
 

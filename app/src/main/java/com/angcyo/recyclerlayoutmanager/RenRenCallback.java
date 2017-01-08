@@ -25,6 +25,7 @@ import static com.angcyo.recyclerlayoutmanager.OverLayCardLayoutManager.TRANS_Y_
 public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
 
     private static final String TAG = "RenRen";
+    private static final int MAX_ROTATION = 15;
     OnSwipeListener mSwipeListener;
     boolean isSwipeAnim = false;
 
@@ -49,6 +50,10 @@ public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+        viewHolder.itemView.setRotation(0);//恢复最后一次的旋转状态
+        if (mSwipeListener != null) {
+            mSwipeListener.onSwipeTo(viewHolder, 0);
+        }
         notifyListener(viewHolder.getAdapterPosition(), direction);
     }
 
@@ -69,15 +74,18 @@ public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-        //Log.e("swipecard", "onChildDraw()  viewHolder = [" + viewHolder + "], dX = [" + dX + "], dY = [" + dY + "], actionState = [" + actionState + "], isCurrentlyActive = [" + isCurrentlyActive + "]");
+        Log.i(TAG, "onChildDraw: dx:" + dX + " dy:" + dY);
         //人人影视的效果
         //if (isCurrentlyActive) {
         //先根据滑动的dxdy 算出现在动画的比例系数fraction
-        double swipValue = Math.sqrt(dX * dX + dY * dY);
-        double fraction = swipValue / getThreshold(recyclerView, viewHolder);
+        float swipeValue = (float) Math.sqrt(dX * dX + dY * dY);
+        final float threshold = getThreshold(recyclerView, viewHolder);
+        float fraction = swipeValue / threshold;
         //边界修正 最大为1
         if (fraction > 1) {
             fraction = 1;
+        } else if (fraction < -1) {
+            fraction = -1;
         }
         //对每个ChildView进行缩放 位移
         int childCount = recyclerView.getChildCount();
@@ -86,13 +94,29 @@ public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
             //第几层,举例子，count =7， 最后一个TopView（6）是第0层，
             int level = childCount - i - 1;
             if (level > 0) {
-                child.setScaleX((float) (1 - SCALE_GAP * level + fraction * SCALE_GAP));
+                child.setScaleX(1 - SCALE_GAP * level + fraction * SCALE_GAP);
 
                 if (level < MAX_SHOW_COUNT - 1) {
-                    child.setScaleY((float) (1 - SCALE_GAP * level + fraction * SCALE_GAP));
-                    child.setTranslationY((float) (TRANS_Y_GAP * level - fraction * TRANS_Y_GAP));
+                    child.setScaleY(1 - SCALE_GAP * level + fraction * SCALE_GAP);
+                    child.setTranslationY(TRANS_Y_GAP * level - fraction * TRANS_Y_GAP);
                 } else {
                     //child.setTranslationY((float) (mTranslationYGap * (level - 1) - fraction * mTranslationYGap));
+                }
+            } else {
+                //最上层
+                //rotate
+                if (dX < -50) {
+                    child.setRotation(-fraction * MAX_ROTATION);
+                } else if (dX > 50) {
+                    child.setRotation(fraction * MAX_ROTATION);
+                } else {
+                    child.setRotation(0);
+                }
+
+                if (mSwipeListener != null) {
+                    RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+                    final int adapterPosition = params.getViewAdapterPosition();
+                    mSwipeListener.onSwipeTo(recyclerView.findViewHolderForAdapterPosition(adapterPosition), dX);
                 }
             }
         }
@@ -100,20 +124,22 @@ public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
 
     public void toLeft(RecyclerView recyclerView) {
         if (check(recyclerView)) {
-            final int last = recyclerView.getAdapter().getItemCount() - 1;
-            animTo(recyclerView, recyclerView.findViewHolderForAdapterPosition(last).itemView, last, 0, -1);
+            animTo(recyclerView, false);
         }
     }
 
     public void toRight(RecyclerView recyclerView) {
         if (check(recyclerView)) {
-            final int last = recyclerView.getAdapter().getItemCount() - 1;
-            animTo(recyclerView, recyclerView.findViewHolderForAdapterPosition(last).itemView, last, 0, 1);
+            animTo(recyclerView, true);
         }
     }
 
-    private void animTo(final RecyclerView recyclerView, final View view, final int position, float fX, float toX) {
-        TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fX, Animation.RELATIVE_TO_SELF, toX,
+    private void animTo(final RecyclerView recyclerView, boolean right) {
+        final int position = recyclerView.getAdapter().getItemCount() - 1;
+        final View view = recyclerView.findViewHolderForAdapterPosition(position).itemView;
+
+        TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0,
+                Animation.RELATIVE_TO_SELF, right ? 1f : -1f,
                 Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF, 1.3f);
         translateAnimation.setFillAfter(true);
         translateAnimation.setDuration(300);
@@ -163,5 +189,32 @@ public class RenRenCallback extends ItemTouchHelper.SimpleCallback {
          *                  {@link ItemTouchHelper#UP} or {@link ItemTouchHelper#DOWN}).
          */
         void onSwiped(int adapterPosition, int direction);
+
+        /**
+         * 最上层View滑动时回调.
+         *
+         * @param viewHolder 最上层的ViewHolder
+         * @param offset     距离原始位置的偏移量
+         */
+        void onSwipeTo(RecyclerView.ViewHolder viewHolder, float offset);
+    }
+
+    public static class SimpleSwipeCallback implements OnSwipeListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void onSwiped(int adapterPosition, int direction) {
+
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void onSwipeTo(RecyclerView.ViewHolder viewHolder, float offset) {
+
+        }
     }
 }

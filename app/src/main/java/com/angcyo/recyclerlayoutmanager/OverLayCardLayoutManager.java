@@ -21,7 +21,7 @@ public class OverLayCardLayoutManager extends RecyclerView.LayoutManager {
     public static int TRANS_Y_GAP;
 
     public OverLayCardLayoutManager(Context context) {
-        TRANS_Y_GAP = (int) (15 * context.getResources().getDisplayMetrics().density);
+        TRANS_Y_GAP = (int) (20 * context.getResources().getDisplayMetrics().density);
     }
 
     @Override

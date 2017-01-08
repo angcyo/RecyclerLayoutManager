@@ -108,9 +108,9 @@ public class TanTanCallback extends RenRenCallback {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         Log.e("swipecard", "onChildDraw()  viewHolder = [" + viewHolder + "], dX = [" + dX + "], dY = [" + dY + "], actionState = [" + actionState + "], isCurrentlyActive = [" + isCurrentlyActive + "]");
         //探探的效果
-        double swipValue = Math.sqrt(dX * dX + dY * dY);
+        double swipeValue = Math.sqrt(dX * dX + dY * dY);
         final float threshold = getThreshold(recyclerView, viewHolder);
-        double fraction = swipValue / threshold;
+        double fraction = swipeValue / threshold;
         //边界修正 最大为1
         if (fraction > 1) {
             fraction = 1;
