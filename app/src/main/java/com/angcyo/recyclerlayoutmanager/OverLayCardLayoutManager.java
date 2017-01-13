@@ -19,6 +19,7 @@ public class OverLayCardLayoutManager extends RecyclerView.LayoutManager {
     public static int MAX_SHOW_COUNT = 4;
     public static float SCALE_GAP = 0.05f;
     public static int TRANS_Y_GAP;
+    public int mTopOffset = 0;
 
     public OverLayCardLayoutManager(Context context) {
         TRANS_Y_GAP = (int) (20 * context.getResources().getDisplayMetrics().density);
@@ -27,6 +28,11 @@ public class OverLayCardLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
         return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
+    public OverLayCardLayoutManager setTopOffset(int topOffset) {
+        mTopOffset = topOffset;
+        return this;
     }
 
     @Override
@@ -54,9 +60,10 @@ public class OverLayCardLayoutManager extends RecyclerView.LayoutManager {
             int widthSpace = getWidth() - getDecoratedMeasuredWidth(view);
             int heightSpace = getHeight() - getDecoratedMeasuredHeight(view);
             //我们在布局时，将childView居中处理，这里也可以改为只水平居中
-            layoutDecoratedWithMargins(view, widthSpace / 2, heightSpace / 2,
+            layoutDecoratedWithMargins(view, widthSpace / 2, mTopOffset == 0 ? (heightSpace / 2) : mTopOffset,
                     widthSpace / 2 + getDecoratedMeasuredWidth(view),
-                    heightSpace / 2 + getDecoratedMeasuredHeight(view));
+                    mTopOffset == 0 ? (heightSpace / 2 + getDecoratedMeasuredHeight(view)) : (mTopOffset + getDecoratedMeasuredHeight(view)));
+
             /**
              * TopView的Scale 为1，translationY 0
              * 每一级Scale相差0.05f，translationY相差7dp左右
